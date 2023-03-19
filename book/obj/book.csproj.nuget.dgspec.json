@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Projects\\book\\book\\book.csproj": {}
+    "D:\\Projects\\csplayerguide\\book\\book.csproj": {}
   },
   "projects": {
-    "D:\\Projects\\book\\book\\book.csproj": {
+    "D:\\Projects\\csplayerguide\\book\\book.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Projects\\book\\book\\book.csproj",
+        "projectUniqueName": "D:\\Projects\\csplayerguide\\book\\book.csproj",
         "projectName": "book",
-        "projectPath": "D:\\Projects\\book\\book\\book.csproj",
+        "projectPath": "D:\\Projects\\csplayerguide\\book\\book.csproj",
         "packagesPath": "C:\\Users\\matvei\\.nuget\\packages\\",
-        "outputPath": "D:\\Projects\\book\\book\\obj\\",
+        "outputPath": "D:\\Projects\\csplayerguide\\book\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

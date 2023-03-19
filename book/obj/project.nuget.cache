@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "ZSymh+6dfiDQmbxHJSUzlrEizspTqaupyle3oiMYRLzt4QGM1opCZIg4a0QnYm1FdKBaLgGi0Y1v9weaXJQZ2A==",
+  "dgSpecHash": "EqGXi2uKQsD4Nq+k2ijQI9CRfLeGKuqR/JjlqHvDvCAjwejg7x/ZC7SH1po3bA7JwEwWPw9vqjEvzLQB+WxveQ==",
   "success": true,
-  "projectFilePath": "D:\\Projects\\book\\book\\book.csproj",
+  "projectFilePath": "D:\\Projects\\csplayerguide\\book\\book.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }

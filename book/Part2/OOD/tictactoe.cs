@@ -8,10 +8,26 @@ public class tictactoe
         BoardRenderer boardRenderer = new BoardRenderer(board);
         Game game = new Game(board, boardRenderer);
 
-        while (true)
+        while (game.turnNumber < 9)
         {
             game.AskForMove();
+
+            if (game.HasWon(board, Cell.X))
+            {
+                boardRenderer.RenderBoard();
+                Console.WriteLine("X's won!");
+                return;
+            }
+            else if (game.HasWon(board, Cell.O))
+            {
+                boardRenderer.RenderBoard();
+                Console.WriteLine("O's won!");
+                return;
+            }
         }
+        
+        boardRenderer.RenderBoard();
+        Console.WriteLine("Draw!");
         
     }
 }
@@ -23,6 +39,7 @@ class Game
     public BoardRenderer boardRenderer;
     private int key { get; set; }
     private Square pickedSquare { get; set; }
+    public int turnNumber = 0;
 
     public Game(Board board, BoardRenderer boardRenderer)
     {
@@ -47,7 +64,7 @@ class Game
         };
 
         if (board.IsEmpty(choice.Row, choice.Column)) return choice;
-        else Console.WriteLine("This cell is already taken");
+        else Console.WriteLine("This cell is already taken!!!!");
         return null;
     }
     
@@ -58,11 +75,33 @@ class Game
         Console.Write("Enter the cell you would like to go to: ");
         key = Convert.ToInt32(Console.ReadLine());
         pickedSquare = PickSquare(key);
-        if(pickedSquare != null)
+        if (pickedSquare != null)
+        {
             board.FillCell(pickedSquare.Row, pickedSquare.Column, move);
-        
-        if (move == Cell.X) move = Cell.O;
-        else move = Cell.X;
+            if (move == Cell.X) move = Cell.O;
+            else move = Cell.X;
+        }
+
+        turnNumber += 1;
+    }
+
+    public bool HasWon(Board board, Cell value)
+    {
+        // Check rows.
+        if (board.ContentsOf(0, 0) == value && board.ContentsOf(0, 1) == value && board.ContentsOf(0, 2) == value) return true;
+        if (board.ContentsOf(1, 0) == value && board.ContentsOf(1, 1) == value && board.ContentsOf(1, 2) == value) return true;
+        if (board.ContentsOf(2, 0) == value && board.ContentsOf(2, 1) == value && board.ContentsOf(2, 2) == value) return true;
+
+        // Check columns.
+        if (board.ContentsOf(0, 0) == value && board.ContentsOf(1, 0) == value && board.ContentsOf(2, 0) == value) return true;
+        if (board.ContentsOf(0, 1) == value && board.ContentsOf(1, 1) == value && board.ContentsOf(2, 1) == value) return true;
+        if (board.ContentsOf(0, 2) == value && board.ContentsOf(1, 2) == value && board.ContentsOf(2, 2) == value) return true;
+
+        // Check diagonals.
+        if (board.ContentsOf(0, 0) == value && board.ContentsOf(1, 1) == value && board.ContentsOf(2, 2) == value) return true;
+        if (board.ContentsOf(2, 0) == value && board.ContentsOf(1, 1) == value && board.ContentsOf(0, 2) == value) return true;
+
+        return false;
     }
 }
 
@@ -72,6 +111,7 @@ class Board
 
     public void FillCell(int row, int collumn, Cell value) => cells[row, collumn] = value;
     public bool IsEmpty(int row, int column) => cells[row, column] == Cell.nil;
+    public Cell ContentsOf(int row, int column) => cells[row, column];
 }
 
 class BoardRenderer
