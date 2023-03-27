@@ -1,6 +1,6 @@
-﻿namespace book.part2.polymorphism;
+﻿namespace book.part2.polymorphism.labelinginventory;
 
-public class polymorphism
+public class labelinginventory
 {
     public static void polymorphismFunc()
     {
