@@ -28,6 +28,24 @@ public class structs
          2. make structs immutable (make variables readonly or dont put setter)
          3. try to not make constructors
         */
+        
+        // classes and structs share same base class: object
+        // class derive from object directly, while structs derive from special System.ValueType class which is derived from object
+        object thing = 3;
+        int number = (int) thing;
+        Console.WriteLine(number);
+        // thats a sample of Boxing and Unboxing
+        /*
+         when a struct value is assigned to a variable that stores references, like this first line
+         the data is pushed to another location - a box
+         a reference to the box is stored in the thing variable
+         this is called boxing conversion
+         */
+        
+        /*
+         on the second line inverse happens, extracting box's content - an unboxing conversion
+         and copied into number variable
+         */
     }
 }
 // you should make structs small and immutable
