@@ -7,10 +7,6 @@ public class fountainOfObjects
         Player player = new Player();
         ConsoleHelper.WriteLine("help for list of actions");
         player.Start();
-        for (int i = 0; i < player.map.pitRooms.Count; i++)
-        {
-            ConsoleHelper.WriteLine($"Pit room {i} row={player.map.pitRooms[i].Row} column={player.map.pitRooms[i].Column}");
-        }
         while (!player.HasWon & !player.HasLose)
         {
             player.CurrentRoomCheck();
@@ -31,6 +27,7 @@ public class Player
     public bool IsFountainEnabled { get; set; }
     public bool HasWon { get; set; }
     public bool HasLose { get; set; }
+    public byte ArrowCount { get; set; }
     public Map map;
 
     public Player()
@@ -39,6 +36,7 @@ public class Player
         this.Row = 0;
         this.Column = 0;
         this.IsFountainEnabled = false;
+        this.ArrowCount = 5;
     }
 
     public void Start()
@@ -47,34 +45,39 @@ public class Player
         map.GenerateRooms();
     }
 
+    #region Command thingies
+
     public void ExecuteCommand(string command)
     {
-        if (command == "move north")
-            if(Row > 0) Row -= 1;
+        if (command == "move north") if(Row > 0) Row -= 1;
             
-        if (command == "move south")
-            if(Row < map.RowLimit) Row += 1;
+        if (command == "move south") if(Row < map.RowLimit) Row += 1;
             
-        if (command == "move west") 
-            if(Column > 0) Column -= 1;
+        if (command == "move west") if(Column > 0) Column -= 1;
                 
-        if (command == "move east")
-            if(Column < map.ColumnLimit) Column += 1;
+        if (command == "move east") if(Column < map.ColumnLimit) Column += 1;
+        
+        if(command == "shoot north") Shoot("north");
+        
+        if(command == "shoot south") Shoot("south");
+        
+        if(command == "shoot west") Shoot("west");
+        
+        if(command == "shoot east") Shoot("east");
 
         if (command == "enable fountain")
         {
-            if(Row == map.fountainRoom.Row & Column == map.fountainRoom.Column) IsFountainEnabled = true;
+            if(IsInFountainRoom()) IsFountainEnabled = true;
             else ConsoleHelper.WriteLine("You are not in fountain room. Go find it!");
         }
-
 
         if (command == "disable fountain" & (Row == 0 & Column == 2))
         {
-            if (Row == map.fountainRoom.Row & Column == map.fountainRoom.Column) IsFountainEnabled = false;
+            if (IsInFountainRoom()) IsFountainEnabled = false;
             else ConsoleHelper.WriteLine("You are not in fountain room. Go find it!");
         }
 
-        if(command == "help") DisplayActions();
+        if(command == "help") About();
         
     }
 
@@ -84,6 +87,7 @@ public class Player
         {
             ConsoleHelper.WriteLine("-------------------------------------------------------");
             ConsoleHelper.WriteLine($"You are in the room at (Row={Row}, Column={Column})");
+            ConsoleHelper.WriteLine($"You have {ArrowCount} arrows");
         }
         Sense();
         if (!HasWon & !HasLose)
@@ -92,7 +96,9 @@ public class Player
             ExecuteCommand(Console.ReadLine());
         }
     }
+    #endregion
 
+    #region room checks
     public void CurrentRoomCheck()
     {
         foreach (Room room in map.pitRooms)
@@ -104,8 +110,74 @@ public class Player
                 HasLose = true;
             }
         }
+
+        foreach (Room room in map.maelstormRooms)
+        {
+            if (room.Row == Row & room.Column == Column)
+            {
+                ConsoleHelper.Write("Whoosh!! You've been ");
+                ConsoleHelper.Write("swept ", ConsoleColor.Yellow);
+                ConsoleHelper.WriteLine("into another room!(-1 row and +2 column)");
+                Whoosh();
+            }
+        }
+        
+        foreach (Room room in map.amarokRooms)
+        {
+            if (room.Row == Row & room.Column == Column)
+            {
+                ConsoleHelper.Write("Nom nom nom! You were eaten by ");
+                ConsoleHelper.WriteLine("an amarok!", ConsoleColor.Yellow);
+                HasLose = true;
+            }
+        }
+    }
+    #endregion
+    
+    public void Whoosh()
+    {
+        if(Row > 0) Row -= 1;
+        if(Column < map.ColumnLimit - 1) Column += 2;
     }
 
+    public void Shoot(string Direction)
+    {
+        if (Direction == "north")
+        {
+            foreach (Room room in map.amarokRooms.ToList())
+            {
+                if (room.Row == Row - 1)
+                    map.amarokRooms.Remove(room);
+            }
+        }
+        if (Direction == "south")
+        {
+            foreach (Room room in map.amarokRooms.ToList())
+            {
+                if (room.Row == Row + 1)
+                    map.amarokRooms.Remove(room);
+            }
+        }
+        if (Direction == "west")
+        {
+            foreach (Room room in map.amarokRooms.ToList())
+            {
+                if (room.Column == Column - 1)
+                    map.amarokRooms.Remove(room);
+            }
+        }
+        if (Direction == "east")
+        {
+            foreach (Room room in map.amarokRooms.ToList())
+            {
+                if (room.Column == Column + 1)
+                    map.amarokRooms.Remove(room);
+            }
+        }
+        ArrowCount -= 1;
+    }
+    
+    #region position checks
     public bool IsInEntranceRoom()
     {
         if (Row == map.entranceRoom.Row & Column == map.entranceRoom.Column) return true;
@@ -117,6 +189,9 @@ public class Player
         if (Row == map.fountainRoom.Row & Column == map.fountainRoom.Column) return true;
         else return false;
     }
+    #endregion
+    
+    #region Neighbouring checks
     
     public bool IsPitRoomNeighbouring()
     {
@@ -129,6 +204,31 @@ public class Player
         
         return false;
     }
+    
+    public bool IsMaelstormRoomNeighbouring()
+    {
+        foreach (Room room in map.maelstormRooms)
+        {
+            if ((room.Row == Row &  room.Column - 1 == Column) | (room.Row - 1 == Row & room.Column == Column) |
+                (room.Row == Row &  room.Column + 1 == Column) | (room.Row + 1 == Row & room.Column == Column)) 
+                return true;
+        }
+        
+        return false;
+    }
+    
+    public bool IsAmarokRoomNeighbouring()
+    {
+        foreach (Room room in map.amarokRooms)
+        {
+            if ((room.Row == Row &  room.Column - 1 == Column) | (room.Row - 1 == Row & room.Column == Column) |
+                (room.Row == Row &  room.Column + 1 == Column) | (room.Row + 1 == Row & room.Column == Column)) 
+                return true;
+        }
+        
+        return false;
+    }
+    #endregion
 
     public void Sense()
     {
@@ -171,12 +271,30 @@ public class Player
             ConsoleHelper.Write("You feel ");
             ConsoleHelper.Write("a draft. ", ConsoleColor.Yellow);
             ConsoleHelper.Write("There is ");
-            ConsoleHelper.Write("a pit ");
+            ConsoleHelper.Write("a pit ", ConsoleColor.Yellow);
             ConsoleHelper.WriteLine("in a nearby room.");
+        }
+        if (IsMaelstormRoomNeighbouring())
+        {
+            ConsoleHelper.Write("You hear ");
+            ConsoleHelper.Write("the growling ", ConsoleColor.Yellow);
+            ConsoleHelper.Write("and ");
+            ConsoleHelper.Write("groaning ", ConsoleColor.Yellow);
+            ConsoleHelper.Write("of a ");
+            ConsoleHelper.Write("maelstorm  ", ConsoleColor.Yellow);
+            ConsoleHelper.WriteLine("nearby.");
+        }
+        if (IsAmarokRoomNeighbouring())
+        {
+            ConsoleHelper.Write("You can smell ");
+            ConsoleHelper.Write("the rotten stench ", ConsoleColor.Yellow);
+            ConsoleHelper.Write("of an ");
+            ConsoleHelper.Write("amarok ", ConsoleColor.Yellow);
+            ConsoleHelper.WriteLine("in a nearby room ");
         }
     }
 
-    public void DisplayActions()
+    public void About()
     {
         ConsoleHelper.WriteLine("help - display this list");
         ConsoleHelper.WriteLine("move north - move -1 row");
@@ -185,6 +303,7 @@ public class Player
         ConsoleHelper.WriteLine("move east - move 1 column");
         ConsoleHelper.WriteLine("enable fountain - enable fountain which is in special room");
         ConsoleHelper.WriteLine("disable fountain - disable fountain which is in special room");
+        ConsoleHelper.WriteLine("shoot north/south/west/east - shoots an arrow into a room in entered direction, kills amarok");
     }
 }
 
@@ -196,6 +315,8 @@ public class Map
     public Room entranceRoom;
     public Room fountainRoom;
     public List<Room> pitRooms = new List<Room>();
+    public List<Room> maelstormRooms = new List<Room>();
+    public List<Room> amarokRooms = new List<Room>();
     public Random rnd = new Random();
 
     public void AskForSize()
@@ -218,6 +339,8 @@ public class Map
             RowLimit = 3;
             ColumnLimit = 3;
             GeneratePitRoom();
+            GenerateMaelstormRoom();
+            GenerateAmarokRoom();
         }
         if (mapSize == "medium")
         {
@@ -225,6 +348,8 @@ public class Map
             RowLimit = 5;
             ColumnLimit = 5;
             GeneratePitRoom(); GeneratePitRoom();
+            GenerateMaelstormRoom(); GenerateMaelstormRoom();
+            GenerateAmarokRoom(); GenerateAmarokRoom();
         }
         if (mapSize == "large")
         {
@@ -232,6 +357,8 @@ public class Map
             RowLimit = 7;
             ColumnLimit = 7;
             GeneratePitRoom(); GeneratePitRoom(); GeneratePitRoom();
+            GenerateMaelstormRoom(); GenerateMaelstormRoom(); GenerateMaelstormRoom();
+            GenerateAmarokRoom(); GenerateAmarokRoom(); GenerateAmarokRoom();
         }
     }
 
@@ -248,6 +375,32 @@ public class Map
             GeneratePitRoom();
     }
 
+    public void GenerateMaelstormRoom()
+    {
+        // saving random coordinates
+        byte requestedRow = Convert.ToByte(rnd.Next(0, RowLimit));
+        byte requestedColumn = Convert.ToByte(rnd.Next(0, ColumnLimit));
+        // checking if room is free
+        if (IsRoomFree(requestedRow, requestedColumn))
+            maelstormRooms.Add(new Room(requestedRow, requestedColumn, RoomType.Maelstorm));
+        // else trying again
+        else
+            GenerateMaelstormRoom();
+    }
+
+    public void GenerateAmarokRoom()
+    {
+        // saving random coordinates
+        byte requestedRow = Convert.ToByte(rnd.Next(0, RowLimit));
+        byte requestedColumn = Convert.ToByte(rnd.Next(0, ColumnLimit));
+        // checking if room is free
+        if (IsRoomFree(requestedRow, requestedColumn))
+            amarokRooms.Add(new Room(requestedRow, requestedColumn, RoomType.Amarok));
+        // else trying again
+        else
+            GenerateAmarokRoom();
+    }
+
     public bool IsRoomFree(byte Row, byte Column)
     {
         if ((entranceRoom.Row != Row | entranceRoom.Column != Column)
@@ -258,8 +411,6 @@ public class Map
 
         return false;
     }
-
-   
 }
 
 public class ConsoleHelper
@@ -279,4 +430,4 @@ public class ConsoleHelper
 
 public record Room(byte Row, byte Column, RoomType Type);
 
-public enum RoomType { Default, Entrance, Fountain, Pit }
+public enum RoomType { Default, Entrance, Fountain, Pit, Maelstorm, Amarok }
