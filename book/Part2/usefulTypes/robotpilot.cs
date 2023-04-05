@@ -4,14 +4,9 @@ public class robotpilot
 {
     public static void Start()
     {
-         byte distance;
-        while (true)
-        {
-            Console.Write("Player 1, how far away from the city do you want to station the Manticore? (from 1 to 100) ");
-            distance = Convert.ToByte(Console.ReadLine());
-            if (distance > 0 && distance <= 100) break;
-            else continue;
-        }
+        Random random = new Random();
+        byte distance;
+        distance = Convert.ToByte(random.Next(1, 101));
         // display stats
         byte round = 1;
         sbyte cityHealth = 15;
