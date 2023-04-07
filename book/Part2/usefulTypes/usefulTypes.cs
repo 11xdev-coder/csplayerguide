@@ -7,7 +7,7 @@ public class usefulTypes
         /*
          Random generates random numbers
          DateTime gets the current time and stores time and date values
-         TimeSpan represents a length of time
+         TimeSpan represents a span of time
          Guid stores globally unique identifier
          List<T> generic collection more useful than arrays
          IEnumerable<T> is an interface for almost any collection type
@@ -19,5 +19,18 @@ public class usefulTypes
 
         Random random = new Random();
         Console.WriteLine(random.Next(6)); // 0, 1, 2, 3, 4, or 5, but not 6
+
+        DateTime time1 = new DateTime(2022, 12, 31); // 31-Dec-22 00:00:00
+        DateTime time2 = new DateTime(2022, 12, 31, 23, 59, 55); // 31-Dec-22 23:59:55
+        Console.WriteLine(time1);
+        Console.WriteLine(time2);
+        
+        DateTime timeLocal = DateTime.Now; // local time zone time
+        DateTime timeUTC = DateTime.UtcNow; // time in Coordinated Universal Time
+        Console.WriteLine(timeLocal);
+        Console.WriteLine(timeUTC);
+
+        TimeSpan timeLeft = new TimeSpan(1, 30, 0);
+        Console.WriteLine(timeLeft);
     }
 }
