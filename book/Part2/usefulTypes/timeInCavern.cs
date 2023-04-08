@@ -1,4 +1,4 @@
-﻿namespace book.Part2.usefulTypes.timeInCavern;
+﻿namespace book.part2.usefulTypes.timeInCavern;
 
 public class timeInCavern
 {
@@ -19,7 +19,7 @@ public class timeInCavern
         
         DateTime timeEnded = DateTime.Now;
         TimeSpan timeSpent = timeEnded - timeStarted;
-        ConsoleHelper.WriteLine($"Time spent: {timeSpent}");
+        ConsoleHelper.WriteLine($"Time spent: {timeSpent.Hours}h {timeSpent.Minutes}min {timeSpent.Seconds}sec");
     }
 }
 

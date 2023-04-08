@@ -32,5 +32,10 @@ public class usefulTypes
 
         TimeSpan timeLeft = new TimeSpan(1, 30, 0);
         Console.WriteLine(timeLeft);
+
+        List<string> words = new List<string>() {"apple", "banana", "corn", "durian"};
+        words[0] = "avocado"; // {"avocado", "banana", "corn", "durian"}
+        words.Add("apple"); // {"avocado", "banana", "corn", "durian", "apple"}
+        words.Insert(2, "pizza"); // {"avocado", "banana", "pizza", "corn", "durian", "apple"}
     }
 }
