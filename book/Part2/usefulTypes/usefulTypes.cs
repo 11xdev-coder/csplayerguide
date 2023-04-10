@@ -37,5 +37,28 @@ public class usefulTypes
         words[0] = "avocado"; // {"avocado", "banana", "corn", "durian"}
         words.Add("apple"); // {"avocado", "banana", "corn", "durian", "apple"}
         words.Insert(2, "pizza"); // {"avocado", "banana", "pizza", "corn", "durian", "apple"}
+        Console.WriteLine(words.Contains("apple")); // true
+        // this
+        foreach (string word in words) 
+            Console.WriteLine(word);
+        // is equal to this
+        IEnumerator<string> iterator = words.GetEnumerator();
+
+        while (iterator.MoveNext())
+        {
+            string word = iterator.Current;
+            Console.WriteLine(word);
+        }
+        
+        // dictionaries
+        Dictionary<string, string> dictionary = new Dictionary<string, string>();
+        dictionary["gunner"] = "a DRG class that have powerful weapons";
+        dictionary["driller"] = "a DRG class that have boom boom";
+        dictionary["scout"] = "zip";
+        dictionary["engineer"] = "turret go brrrr";
+
+        Console.WriteLine(dictionary["scout"]); // zip
+        Console.WriteLine(dictionary.ContainsKey("dedmen")); // false
+        Console.WriteLine(dictionary.GetValueOrDefault("dedmen", "what")); // what
     }
 }
