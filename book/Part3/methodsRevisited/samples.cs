@@ -35,5 +35,16 @@ public class samples
         int x;
         Number(out x);
         Console.WriteLine(x);
+
+        
+    }
+}
+
+public static class blabla
+{
+    public static void SomeFunc(this string text)
+    {
+        // this is an extension method
+        // bla bla bla
     }
 }
