@@ -1,4 +1,4 @@
-﻿namespace book.Part3.methodsRevisited;
+﻿namespace book.part3.methodsRevisited.betterRandom;
 
 public class betterRandom
 {
