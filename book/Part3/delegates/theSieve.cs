@@ -18,12 +18,12 @@ public class theSieve
                 sieve.filter = FilterType.Even;
                 break;
             }
-            if (userInput == "Positive")
+            else if (userInput == "Positive")
             {
                 sieve.filter = FilterType.Positive;
                 break;
             }
-            if (userInput == "Multiplies 10")
+            else if (userInput == "Multiplies 10")
             {
                 sieve.filter = FilterType.Multiplies10;
                 break;
