@@ -2,13 +2,15 @@
 
 public class theLambdaSieve
 {
-    
-    
     public static void Start()
     {
         string userInput;
         int userNumber;
         Sieve sieve;
+        
+        var IsEven = (int number) => number % 2 == 0;
+        var IsPositive = (int number) => number > 0;
+        var MultipleOfTen = (int number) => number % 10 == 0;
 
         while (true)
         {
@@ -43,10 +45,6 @@ public class theLambdaSieve
             
             Console.WriteLine(sieve.IsGood(userNumber));
         }
-        
-        bool IsEven(int number) => number % 2 == 0;
-        bool IsPositive(int number) => number >= 0;
-        bool MultipleOfTen(int number) => number % 10 == 0;
     }
 }
 
