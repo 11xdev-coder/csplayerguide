@@ -1,19 +1,41 @@
-﻿namespace book.part3.uncodedOne.attacks;
+﻿namespace book.part3.uncodedOne.battleSeries;
 
-public class attacks
+public class battleSeries
 {
     public static void Start()
     {
-        string name = ColoredConsole.Prompt("What is your name?").ToUpper();
+        Party monsterParty1(IPlayer player)
+        {
+            Party monsters = new Party(player);
+            monsters.characters.Add(new Skeleton());
+            return monsters;
+        }
+        Party monsterParty2(IPlayer player)
+        {
+            Party monsters = new Party(player);
+            monsters.characters.Add(new Skeleton());
+            monsters.characters.Add(new Skeleton());
+            return monsters;
+        }
+        
+        string name = ColoredConsole.Prompt("whacha name?").ToUpper();
         
         Party heroes = new Party(new ComputerPlayer());
         heroes.characters.Add(new TrueProgrammer(name));
+        
+        IPlayer player1 = new ComputerPlayer();
+        IPlayer player2 = new ComputerPlayer();
+        
+        List<Party> monsterParties = new List<Party> { monsterParty1(player2), monsterParty2(player2) };
 
-        Party monsters = new Party(new ComputerPlayer());
-        monsters.characters.Add(new Skeleton());
+        for (int gameNumber = 0; gameNumber < monsterParties.Count; gameNumber++) // getting through every party
+        {
+            Party monsters = monsterParties[gameNumber]; // setting monster party to current party index
+            Game game = new Game(heroes, monsters); // new game
+            game.Run();
 
-        Game battle = new Game(heroes, monsters);
-        battle.Run();
+            if (heroes.characters.Count == 0) break;
+        }
         
         // run dis when while loop ends
         if (heroes.characters.Count > 0) ColoredConsole.WriteLine("wowie you won cool uncoded one go bye bye", ConsoleColor.Green);
@@ -112,7 +134,7 @@ public class AttackAction : IAction
         if (target.IsAlive)
         {
             game.GetPartyFor(target).characters.Remove(target);
-            Console.WriteLine($"{target.Name} has been defeated!");
+            Console.WriteLine($"{target.Name} has rekt gg wp");
         }
     }
 }
@@ -216,7 +238,7 @@ public static class ColoredConsole
         Console.ForegroundColor = ConsoleColor.Gray;
         Console.Write(questionToAsk + " ");
         Console.ForegroundColor = ConsoleColor.Cyan;
-        string input = Console.ReadLine() ?? ""; // If we got null, use empty string instead.
+        string input = Console.ReadLine() ?? ""; // empty string instead of null
         Console.ForegroundColor = previousColor;
         return input;
     }
