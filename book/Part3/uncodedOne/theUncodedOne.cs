@@ -1,19 +1,49 @@
-﻿namespace book.part3.uncodedOne.attacks;
+﻿namespace book.part3.uncodedOne.theUncodedOne;
 
-public class attacks
+public class theUncodedOne
 {
     public static void Start()
     {
-        string name = ColoredConsole.Prompt("What is your name?").ToUpper();
+        Party monsterParty1(IPlayer player)
+        {
+            Party monsters = new Party(player);
+            monsters.characters.Add(new Skeleton());
+            return monsters;
+        }
+        Party monsterParty2(IPlayer player)
+        {
+            Party monsters = new Party(player);
+            monsters.characters.Add(new Skeleton());
+            monsters.characters.Add(new Skeleton());
+            return monsters;
+        }
+        Party monsterParty3(IPlayer player)
+        {
+            Party monsters = new Party(player);
+            monsters.characters.Add(new Skeleton());
+            monsters.characters.Add(new Skeleton());
+            monsters.characters.Add(new UncodedOne());
+            return monsters;
+        }
         
-        Party heroes = new Party(new ComputerPlayer());
+        string name = ColoredConsole.Prompt("whacha name?").ToUpper();
+        
+        IPlayer heroPlayer = new ComputerPlayer();
+        IPlayer monsterPlayer = new ComputerPlayer();
+        
+        Party heroes = new Party(heroPlayer);
         heroes.characters.Add(new TrueProgrammer(name));
 
-        Party monsters = new Party(new ComputerPlayer());
-        monsters.characters.Add(new Skeleton());
+        List<Party> monsterParties = new List<Party> { monsterParty1(monsterPlayer), monsterParty2(monsterPlayer), monsterParty3(monsterPlayer) };
 
-        Game game = new Game(heroes, monsters);
-        game.Run();
+        for (int gameNumber = 0; gameNumber < monsterParties.Count; gameNumber++) // getting through every party
+        {
+            Party monsters = monsterParties[gameNumber]; // setting monster party to current party index
+            Game game = new Game(heroes, monsters); // new game
+            game.Run();
+
+            if (heroes.characters.Count == 0) break;
+        }
         
         // run dis when while loop ends
         if (heroes.characters.Count > 0) ColoredConsole.WriteLine("wowie you won cool uncoded one go bye bye", ConsoleColor.Green);
@@ -56,7 +86,7 @@ public class Game
         }
     }
     // game enda checka
-    public bool GameEnd => heroes.characters.Count == 0 || monsters.characters.Count == 0;
+    public bool GameEnd => heroes.characters.Count <= 0 || monsters.characters.Count <= 0;
     
     // useful fucnscscscc
     public Party GetEnemyPartyFor(Character character) => heroes.characters.Contains(character) ? monsters : heroes;
@@ -112,7 +142,7 @@ public class AttackAction : IAction
         if (!target.IsAlive)
         {
             game.GetPartyFor(target).characters.Remove(target);
-            Console.WriteLine($"{target.Name} has been defeated!");
+            Console.WriteLine($"{target.Name} has rekt gg wp");
         }
     }
 }
@@ -177,6 +207,16 @@ public class TrueProgrammer : Character
     public override IAttack StandardAttack { get; } = new Punch();
 }
 
+public class UncodedOne : Character
+{
+    public override string Name => "THE UNCODED ONE";
+
+    public UncodedOne() : base(15) { }
+    
+    public override IAttack StandardAttack { get; } = new UnravelingAttack();
+}
+
+// attacks
 public class Punch : IAttack
 {
     public string Name => "PUNCH";
@@ -190,6 +230,14 @@ public class BoneCrunch : IAttack
 
     public string Name => "BONE CRUNCH";
     public AttackData Create() => new AttackData(_random.Next(2));
+}
+
+public class UnravelingAttack : IAttack
+{
+    private static readonly Random _random = new Random();
+
+    public string Name => "UNRAVELING ATTACK";
+    public AttackData Create() => new AttackData(_random.Next(3));
 }
 
 public static class ColoredConsole
@@ -216,7 +264,7 @@ public static class ColoredConsole
         Console.ForegroundColor = ConsoleColor.Gray;
         Console.Write(questionToAsk + " ");
         Console.ForegroundColor = ConsoleColor.Cyan;
-        string input = Console.ReadLine() ?? ""; // If we got null, use empty string instead.
+        string input = Console.ReadLine() ?? ""; // empty string instead of null
         Console.ForegroundColor = previousColor;
         return input;
     }

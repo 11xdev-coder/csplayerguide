@@ -58,7 +58,7 @@ public class Game
     public void Run()
     {
         // until game ends
-        while (GameEnd)
+        while (!GameEnd)
         {
             // getting a total party from these 2
             foreach (Party party in new[] { heroes, monsters })
@@ -131,7 +131,7 @@ public class AttackAction : IAction
 
         Console.WriteLine($"{attack.Name} dealt {data.Damage} damage to {target.Name}.");
         Console.WriteLine($"{target.Name} is now at {target.HP}/{target.MaxHP} HP.");
-        if (target.IsAlive)
+        if (!target.IsAlive)
         {
             game.GetPartyFor(target).characters.Remove(target);
             Console.WriteLine($"{target.Name} has rekt gg wp");

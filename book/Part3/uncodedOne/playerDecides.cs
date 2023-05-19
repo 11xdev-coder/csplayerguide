@@ -1,19 +1,65 @@
-﻿namespace book.part3.uncodedOne.attacks;
+﻿namespace book.part3.uncodedOne.playerDecides;
 
-public class attacks
+public class playerDecides
 {
     public static void Start()
     {
-        string name = ColoredConsole.Prompt("What is your name?").ToUpper();
+        // some functions
+        #region party funcs
+        Party monsterParty1(IPlayer player)
+        {
+            Party monsters = new Party(player);
+            monsters.characters.Add(new Skeleton());
+            return monsters;
+        }
+        Party monsterParty2(IPlayer player)
+        {
+            Party monsters = new Party(player);
+            monsters.characters.Add(new Skeleton());
+            monsters.characters.Add(new Skeleton());
+            return monsters;
+        }
+        Party monsterParty3(IPlayer player)
+        {
+            Party monsters = new Party(player);
+            monsters.characters.Add(new Skeleton());
+            monsters.characters.Add(new Skeleton());
+            monsters.characters.Add(new UncodedOne());
+            return monsters;
+        }
+        #endregion
         
-        Party heroes = new Party(new ComputerPlayer());
+        Console.WriteLine("geme made slektion:");
+        Console.WriteLine("1 - human being vs alien");
+        Console.WriteLine("2 - alien vs alien");
+        Console.WriteLine("3 - human being vs human being");
+        string choice = ColoredConsole.Prompt("now pick");
+
+        IPlayer heroPlayer;
+        IPlayer monsterPlayer;
+        
+        if (choice == "1") { heroPlayer = new HumanPlayer(); monsterPlayer = new ComputerPlayer(); }
+        else if (choice == "2") { heroPlayer = new ComputerPlayer(); monsterPlayer = new ComputerPlayer(); }
+        else { heroPlayer = new HumanPlayer(); monsterPlayer = new HumanPlayer(); }
+
+        
+        string name = ColoredConsole.Prompt("whacha name?").ToUpper();
+        
+        
+        
+        Party heroes = new Party(heroPlayer);
         heroes.characters.Add(new TrueProgrammer(name));
 
-        Party monsters = new Party(new ComputerPlayer());
-        monsters.characters.Add(new Skeleton());
+        List<Party> monsterParties = new List<Party> { monsterParty1(monsterPlayer), monsterParty2(monsterPlayer), monsterParty3(monsterPlayer) };
 
-        Game game = new Game(heroes, monsters);
-        game.Run();
+        for (int gameNumber = 0; gameNumber < monsterParties.Count; gameNumber++) // getting through every party
+        {
+            Party monsters = monsterParties[gameNumber]; // setting monster party to current party index
+            Game game = new Game(heroes, monsters); // new game
+            game.Run();
+
+            if (heroes.characters.Count == 0) break;
+        }
         
         // run dis when while loop ends
         if (heroes.characters.Count > 0) ColoredConsole.WriteLine("wowie you won cool uncoded one go bye bye", ConsoleColor.Green);
@@ -56,7 +102,7 @@ public class Game
         }
     }
     // game enda checka
-    public bool GameEnd => heroes.characters.Count == 0 || monsters.characters.Count == 0;
+    public bool GameEnd => heroes.characters.Count <= 0 || monsters.characters.Count <= 0;
     
     // useful fucnscscscc
     public Party GetEnemyPartyFor(Character character) => heroes.characters.Contains(character) ? monsters : heroes;
@@ -112,7 +158,7 @@ public class AttackAction : IAction
         if (!target.IsAlive)
         {
             game.GetPartyFor(target).characters.Remove(target);
-            Console.WriteLine($"{target.Name} has been defeated!");
+            Console.WriteLine($"{target.Name} has rekt gg wp");
         }
     }
 }
@@ -124,6 +170,47 @@ public class ComputerPlayer : IPlayer
         Thread.Sleep(500);
         return new AttackAction(character.StandardAttack, game.GetEnemyPartyFor(character).characters[0]);
     }
+}
+
+public class HumanPlayer : IPlayer
+{
+    public IAction ChooseAction(Game game, Character character)
+    {
+        List<MenuChoice> menuChoices = CreateMenuOptions(game, character);
+
+        for (int index = 0; index < menuChoices.Count; index++)
+            ColoredConsole.WriteLine($"{index + 1} - {menuChoices[index].Description}", menuChoices[index].Enabled ? ConsoleColor.Gray : ConsoleColor.DarkGray);
+
+        string choice = ColoredConsole.Prompt("whacha wanna do?");
+        int menuIndex = Convert.ToInt32(choice) - 1;
+
+        if (menuChoices[menuIndex].Enabled) return menuChoices[menuIndex].Action!; // Checking if it is enabled is as good as a null check.
+
+        return new DoNothingAction();
+    }
+
+    private List<MenuChoice> CreateMenuOptions(Game game, Character character)
+    {
+        Party currentParty = game.GetPartyFor(character);
+        Party otherParty = game.GetEnemyPartyFor(character);
+
+        List<MenuChoice> menuChoices = new List<MenuChoice>();
+
+        if (otherParty.characters.Count > 0)
+            menuChoices.Add(new MenuChoice($"standard Attack ({character.StandardAttack.Name})", new AttackAction(character.StandardAttack, otherParty.characters[0])));
+        else
+            menuChoices.Add(new MenuChoice($"standard Attack ({character.StandardAttack.Name})", null));
+
+
+        menuChoices.Add(new MenuChoice("nothing", new DoNothingAction()));
+
+        return menuChoices;
+    }
+}
+
+public record MenuChoice(string Description, IAction? Action)
+{
+    public bool Enabled => Action != null;
 }
 
 public class Party
@@ -177,6 +264,16 @@ public class TrueProgrammer : Character
     public override IAttack StandardAttack { get; } = new Punch();
 }
 
+public class UncodedOne : Character
+{
+    public override string Name => "THE UNCODED ONE";
+
+    public UncodedOne() : base(15) { }
+    
+    public override IAttack StandardAttack { get; } = new UnravelingAttack();
+}
+
+// attacks
 public class Punch : IAttack
 {
     public string Name => "PUNCH";
@@ -190,6 +287,14 @@ public class BoneCrunch : IAttack
 
     public string Name => "BONE CRUNCH";
     public AttackData Create() => new AttackData(_random.Next(2));
+}
+
+public class UnravelingAttack : IAttack
+{
+    private static readonly Random _random = new Random();
+
+    public string Name => "UNRAVELING ATTACK";
+    public AttackData Create() => new AttackData(_random.Next(3));
 }
 
 public static class ColoredConsole
@@ -216,7 +321,7 @@ public static class ColoredConsole
         Console.ForegroundColor = ConsoleColor.Gray;
         Console.Write(questionToAsk + " ");
         Console.ForegroundColor = ConsoleColor.Cyan;
-        string input = Console.ReadLine() ?? ""; // If we got null, use empty string instead.
+        string input = Console.ReadLine() ?? ""; // empty string instead of null
         Console.ForegroundColor = previousColor;
         return input;
     }
