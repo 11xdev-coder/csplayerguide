@@ -27,6 +27,13 @@ public class gameStatus
             monsters.characters.Add(new UncodedOne());
             return monsters;
         }
+        Party monsterParty4(IPlayer player)
+        {
+            Party monsters = new Party(player);
+            monsters.characters.Add(new StoneAmarok());
+            monsters.characters.Add(new StoneAmarok());
+            return monsters;
+        }
         #endregion
         
         Console.WriteLine("geme made slektion:");
@@ -50,7 +57,7 @@ public class gameStatus
         Party heroes = new Party(heroPlayer);
         heroes.characters.Add(new TrueProgrammer(name));
 
-        List<Party> monsterParties = new List<Party> { monsterParty1(monsterPlayer), monsterParty2(monsterPlayer), monsterParty3(monsterPlayer) };
+        List<Party> monsterParties = new List<Party> { monsterParty1(monsterPlayer), monsterParty2(monsterPlayer), monsterParty3(monsterPlayer), monsterParty4(monsterPlayer) };
 
         for (int gameNumber = 0; gameNumber < monsterParties.Count; gameNumber++) // getting through every party
         {
@@ -158,6 +165,7 @@ public record AttackData(int Damage);
 public interface IAttack
 {
     string Name { get; }
+    DamageType damageType { get; }
     AttackData Create();
 }
 
@@ -174,17 +182,29 @@ public class AttackAction : IAction
 
     public void Run(Game game, Character doer)
     {
-        Console.WriteLine($"{doer.Name} used {attack.Name} on {target.Name}.");
+        Console.WriteLine($"{doer.Name} used {attack.Name} on {target.Name} with {attack.damageType} damage type");
 
         AttackData data = attack.Create();
-        target.HP -= data.Damage;
 
-        Console.WriteLine($"{attack.Name} dealt {data.Damage} damage to {target.Name}.");
-        Console.WriteLine($"{target.Name} is now at {target.HP}/{target.MaxHP} HP.");
+        int damage = data.Damage - target.Defense;
+        
+        Console.WriteLine($"{target.Name} has {target.Defense} defense");
+        if (attack.damageType == DamageType.chemical)
+        {
+            Console.WriteLine($"{attack.Name} is NEGATED all of the defense");
+            damage = data.Damage;
+        }
+
+        damage = Math.Clamp(damage, 0, 999); // tweaking damage range (from 0 to 999)
+        target.HP -= damage;
+
+        Console.WriteLine($"{attack.Name} dealt {damage} damage to {target.Name}");
+        
+        Console.WriteLine($"{target.Name} is now at {target.HP}/{target.MaxHP} HP");
         if (!target.IsAlive)
         {
             game.GetPartyFor(target).characters.Remove(target);
-            Console.WriteLine($"{target.Name} has rekt gg wp");
+            Console.WriteLine($"{target.Name} has rekt");
         }
     }
 }
@@ -210,7 +230,7 @@ public class HumanPlayer : IPlayer
         string choice = ColoredConsole.Prompt("whacha wanna do?");
         int menuIndex = Convert.ToInt32(choice) - 1;
 
-        if (menuChoices[menuIndex].Enabled) return menuChoices[menuIndex].Action!; // Checking if it is enabled is as good as a null check.
+        if (menuChoices[menuIndex].Enabled) return menuChoices[menuIndex].Action!; // null check
 
         return new DoNothingAction();
     }
@@ -223,10 +243,17 @@ public class HumanPlayer : IPlayer
         List<MenuChoice> menuChoices = new List<MenuChoice>();
 
         if (otherParty.characters.Count > 0)
-            menuChoices.Add(new MenuChoice($"standard Attack ({character.StandardAttack.Name})", new AttackAction(character.StandardAttack, otherParty.characters[0])));
+        {
+            menuChoices.Add(new MenuChoice($"standard attack ({character.StandardAttack.Name})", new AttackAction(character.StandardAttack, otherParty.characters[0])));
+            if(character.SecondaryAttack != null)
+                menuChoices.Add(new MenuChoice($"secondary attack ({character.SecondaryAttack.Name})", new AttackAction(character.SecondaryAttack, otherParty.characters[0])));
+        }
         else
-            menuChoices.Add(new MenuChoice($"standard Attack ({character.StandardAttack.Name})", null));
-
+        {
+            menuChoices.Add(new MenuChoice($"standard attack ({character.StandardAttack.Name})", null));
+            if(character.SecondaryAttack != null)
+                menuChoices.Add(new MenuChoice($"secondary attack ({character.SecondaryAttack.Name})", new AttackAction(character.SecondaryAttack, otherParty.characters[0])));
+        }
 
         menuChoices.Add(new MenuChoice("nothing", new DoNothingAction()));
 
@@ -254,6 +281,7 @@ public abstract class Character
 {
     public abstract string Name { get; }
     public abstract IAttack StandardAttack { get; }
+    public abstract IAttack SecondaryAttack { get; }
     
     private int _hp;
     public int HP
@@ -262,14 +290,17 @@ public abstract class Character
         set => _hp = Math.Clamp(value, 0, MaxHP);
     }
 
+    public int Defense;
+
     public int MaxHP { get; }
 
     public bool IsAlive => HP > 0;
 
-    public Character(int hp)
+    public Character(int hp, int def)
     {
         MaxHP = hp;
         HP = hp;
+        Defense = def;
     }
 }
 
@@ -277,32 +308,56 @@ public class Skeleton : Character
 {
     public override string Name => "SKELETON";
     public override IAttack StandardAttack { get; } = new BoneCrunch();
+    public override IAttack SecondaryAttack { get; } = null;
     
-    public Skeleton() : base(5) { }
+    public Skeleton() : base(5, 1) { }
 }
 
 public class TrueProgrammer : Character
 {
     public override string Name { get; }
 
-    public TrueProgrammer(string name) : base(25) => Name = name;
+    public TrueProgrammer(string name) : base(25, 0) => Name = name;
     
     public override IAttack StandardAttack { get; } = new Punch();
+    public override IAttack SecondaryAttack { get; } = new ChemicalBottle();
 }
 
 public class UncodedOne : Character
 {
     public override string Name => "THE UNCODED ONE";
 
-    public UncodedOne() : base(15) { }
+    public UncodedOne() : base(15, 2) { }
     
     public override IAttack StandardAttack { get; } = new UnravelingAttack();
+    public override IAttack SecondaryAttack { get; } = null;
+}
+
+public class StoneAmarok : Character
+{
+    public override string Name => "STONE AMAROK";
+
+    public StoneAmarok() : base(5, 4) { }
+    
+    public override IAttack StandardAttack { get; } = new UnravelingAttack();
+    public override IAttack SecondaryAttack { get; } = null;
 }
 
 // attacks
 public class Punch : IAttack
 {
     public string Name => "PUNCH";
+
+    public DamageType damageType => DamageType.physical;
+
+    public AttackData Create() => new AttackData(1);
+}
+
+public class ChemicalBottle : IAttack
+{
+    public string Name => "CHEMICAL BOTTLE";
+    
+    public DamageType damageType => DamageType.chemical;
 
     public AttackData Create() => new AttackData(1);
 }
@@ -312,6 +367,9 @@ public class BoneCrunch : IAttack
     private static readonly Random _random = new Random();
 
     public string Name => "BONE CRUNCH";
+    
+    public DamageType damageType => DamageType.physical;
+    
     public AttackData Create() => new AttackData(_random.Next(2));
 }
 
@@ -320,7 +378,19 @@ public class UnravelingAttack : IAttack
     private static readonly Random _random = new Random();
 
     public string Name => "UNRAVELING ATTACK";
+    
+    public DamageType damageType => DamageType.physical;
+    
     public AttackData Create() => new AttackData(_random.Next(3));
+}
+
+public class StonyBite : IAttack
+{
+    public string Name => "STONY BITE";
+    
+    public DamageType damageType => DamageType.physical;
+    
+    public AttackData Create() => new AttackData(5);
 }
 
 public static class ColoredConsole
@@ -352,3 +422,7 @@ public static class ColoredConsole
         return input;
     }
 }
+
+// physical damage type does not ignore defense
+// chemical ignores defense
+public enum DamageType { physical, chemical }
